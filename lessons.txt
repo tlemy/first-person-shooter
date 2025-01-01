@@ -1,0 +1,9 @@
+- class cannot have pointer member
+- header files are in /usr/include
+- after installing a package with apt, the docs can be found in /usr/share/docs
+- c++ standard library headers are in /usr/include/c++
+- to add c++ stdlib header files to vscode, modify includePath in settings
+- to install c++ stdlib apt install libstdc++-12-dev libstdc++-12-doc
+- include pragma once instead of include gards
+- includePath: /usr/include/** to include all subfolders
+- vscode can see SDL_video.h, but I have to do SDL2/SDL_video.h for g++
