@@ -1,10 +1,12 @@
 #include <Game.h>
+#include <SDL_Error.h>
+#include <SDL2/SDL.h>
 #include <thread>
 #include <iostream>
-#include <SDL2/SDL.h>
 
 namespace FPS
 {
+
 void init(Game* gme)
 {
     // init SDL library;
@@ -22,24 +24,24 @@ void init(Game* gme)
 
     if (NULL == gme->win)
     {
-        throw SDL_GetError();
+	throwSDL_Error();
     }
 
     // get display index
-    gme->displayIdx = SDL_GetWindowDisplayIndex(gme->win);
+    int display_idx {SDL_GetWindowDisplayIndex(gme->win)};
 
-    if (-1 == gme->displayIdx)
+    if (-1 == display_idx)
     {
-        throw SDL_GetError();
+        throwSDL_Error();
     }
     SDL_Log("Retrieved Display index");
 
     // get display bounds
     SDL_Rect rect {};
 
-    if (-1 == SDL_GetDisplayUsableBounds(gme->displayIdx, &rect))
+    if (-1 == SDL_GetDisplayUsableBounds(display_idx, &rect))
     {
-        throw SDL_GetError();
+    	throwSDL_Error();
     }
     SDL_Log("Retrieved display bounds");
 
@@ -47,31 +49,63 @@ void init(Game* gme)
     SDL_SetWindowSize(gme->win, rect.w, rect.h);
     SDL_Log("Resized Window");
 
-    // GET surface
-    if (NULL == (gme->surf = SDL_GetWindowSurface(gme->win)))
+    // Get surface
+    if (NULL == (SDL_GetWindowSurface(gme->win)))
     {
-        throw SDL_GetError();
+        throwSDL_Error();
     }
-    SDL_Log("Got Surface");
+    SDL_Log("Retrieved Surface");
 
     // refresh window surface
     if (-1 == SDL_UpdateWindowSurface(gme->win))
     {
-        throw SDL_GetError();
+        throwSDL_Error();
     }
     SDL_Log("Updated Surface");
 
     // create 2D renderer
     if (NULL == (gme->rend =
-        SDL_CreateRenderer(gme->win, gme->displayIdx, SDL_RENDERER_TARGETTEXTURE)))
+        SDL_CreateRenderer(gme->win, display_idx, SDL_RENDERER_TARGETTEXTURE)))
     {
-        throw SDL_GetError();
+        throwSDL_Error();
     }
     SDL_Log("Created Renderer");
 }
 
-void play(Game* gme)
+void play (Game* gme)
 {
+    int size_w {};
+    int size_h {};
+
+    float scale_x  {};
+    float scale_y  {};
+
+    // set integer scale
+    if (0 > SDL_RenderSetIntegerScale(gme->rend, SDL_TRUE))
+    {
+        throwSDL_Error();
+    }
+
+    // get init scale
+    SDL_RenderGetScale(gme->rend, &scale_x, &scale_y);
+    SDL_Log("Scale %f x %f", scale_x, scale_y);
+
+    // set window dimensions
+    SDL_GetWindowSize(gme->win, &size_w, &size_h);
+    SDL_Log("Dimensions %d x %d", size_w, size_h);
+
+    // init minimap borders
+    int y {static_cast<int>(size_h * 0.55)};
+    int d {size_h - y};
+
+    gme->map->y = y;
+    gme->map->h = d;
+    gme->map->w = d;
+
+    // init player pos
+    gme->ply->x = gme->map->x + static_cast<int>(gme->map->w / 2);
+    gme->ply->y = gme->map->y + static_cast<int>(gme->map->h / 2);
+
     while (1)
     {
         SDL_Event event {};
@@ -80,21 +114,46 @@ void play(Game* gme)
         {
             if (SDL_QUIT == event.type)
             {
-
                 quit(gme);
                 SDL_Log("Quit Game");
                 return;
             }
         }
 
-        const SDL_Rect square {0, 0, 100, 100};
+        // set minimap color
+        if(0 > SDL_SetRenderDrawColor(gme->rend, 255, 255, 255, 255))
+        {
+       		throwSDL_Error(); 
+        }
 
-        SDL_RenderClear(gme->rend);
-        SDL_SetRenderDrawColor(gme->rend, 255, 255, 255, 255);
-        SDL_RenderDrawRect(gme->rend, &square);
-        SDL_SetRenderDrawColor(gme->rend, 0, 0, 0, 255);
+        // draw minimap
+        if(0 > SDL_RenderDrawRect(gme->rend, gme->map))
+        {
+        	throwSDL_Error();
+        }
+
+        // draw player
+        if(0 > SDL_RenderSetScale(gme->rend, scale_x * 1.1f, scale_y * 1.1f)
+            || 0 > SDL_RenderDrawPoint(gme->rend, gme->ply->x, gme->ply->y)
+            || 0 > SDL_RenderSetScale(gme->rend, scale_x, scale_y))
+        {
+        	throwSDL_Error();
+        }
+
+        // unset minimap color
+        if(0 > SDL_SetRenderDrawColor(gme->rend, 0, 0, 0, 255))
+        {
+			throwSDL_Error();
+        }
+
+        // refresh screen
         SDL_RenderPresent(gme->rend);
         SDL_Delay(100);
+
+        if (0 > SDL_RenderClear(gme->rend))
+        {
+			throwSDL_Error();
+        }
     }
 }
 

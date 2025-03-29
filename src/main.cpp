@@ -3,7 +3,9 @@
 
 int main(void)
 {
-    FPS::Game gme {NULL, NULL, NULL, -1};
+    SDL_Rect map {};
+    SDL_Rect ply {};
+    FPS::Game gme {NULL, NULL, &map, &ply};
 
     try
     {
