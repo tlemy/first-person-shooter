@@ -1,0 +1,3 @@
+g++ \
+./src/** ./lib/** \
+-v -I./include -std=c++17 -lglfw -lGL \ 

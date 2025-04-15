@@ -1,24 +1,36 @@
 #include <Game.h>
 #include <exception>
+#include <iostream>
 
 int main(void)
 {
-    SDL_Rect map {};
-    SDL_Rect ply {};
-    FPS::Game gme {NULL, NULL, &map, &ply};
-
-    try
+    FPS::Game gme {NULL};
+	
+	try
     {
         FPS::init(&gme);
-        FPS::play(&gme);
+
+        while (!glfwWindowShouldClose(gme.win))
+        {
+            glClear(GL_COLOR_BUFFER_BIT);
+
+			glfwSwapBuffers(gme.win);
+
+			glfwPollEvents();
+        }
+
+		glfwDestroyWindow(gme.win);
+		FPS::quit(&gme);
     }
     catch(const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "%s", e.what());
-
-        FPS::quit(&gme);
-
+    	FPS::quit(&gme);
+		
+		std::cout << e.what() << std::endl;	
+		
         return -1;
     }
+	
     return 0;
 }
+

@@ -1,10 +1,10 @@
 
 main:
 	g++ \
-	./src/main.cpp ./src/Game.cpp ./src/SDL_Error.cpp \
-	-I./include \
-	-std=c++17 -lSDL2 -lSDL2main -fext-numeric-literals -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wshadow -o ./build/main
-	./build/main
+	./src/** ./lib/** \
+	-std=c++17 \
+	-I./include -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl \
+	-o ./build/main
 
 clean:
 	rm build/*

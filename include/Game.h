@@ -1,24 +1,18 @@
-#pragma once
+#ifndef _Game_
+#define _Game_
 
-#include <SDL2/SDL.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 namespace FPS
 {
-    typedef struct Player
-    {
-        int x;
-        int y;
-    } Player;
-
     typedef struct Game
     {
-        SDL_Window* win;
-        SDL_Renderer* rend;
-        SDL_Rect* map;
-        SDL_Rect* ply;
+        GLFWwindow* win;
     } Game;
 
     void init(Game* gme);
-    void play(Game* gme);
+    // void play(Game* gme);
     void quit(Game* gme);
 }
+#endif
